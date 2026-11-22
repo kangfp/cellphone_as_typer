@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>手机输入 → 电脑光标</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #101418; color: #e6e9ec;
+    font-family: -apple-system, "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;
+  }
+  header { padding: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  #dot { width: 10px; height: 10px; border-radius: 50%; background: #888; flex: none; }
+  #dot.ok { background: #3fb950; }
+  #dot.bad { background: #f85149; }
+  #status { color: #9aa4af; font-size: 12px; margin-left: auto; text-align: right; }
+  #banner { display: none; margin: 0 16px 8px; padding: 10px; border-radius: 8px;
+            background: #3d1d1d; color: #ffb3ad; font-size: 13px; }
+  main { flex: 1; display: flex; flex-direction: column; padding: 0 16px 16px; gap: 12px; }
+  textarea {
+    flex: 1; min-height: 35vh; resize: none; font-size: 17px; line-height: 1.5;
+    padding: 12px; border-radius: 12px; border: 1px solid #2d333b;
+    background: #161b22; color: #e6e9ec;
+  }
+  textarea:focus { outline: none; border-color: #388bfd; }
+  .opts { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #9aa4af; }
+  .opts label { display: flex; align-items: center; gap: 6px; }
+  #send { font-size: 18px; padding: 14px; border: none; border-radius: 12px;
+          background: #238636; color: #fff; font-weight: 600; }
+  #send:disabled { opacity: .6; }
+  #send.ok { background: #1f6feb; }
+  .mini { background: #21262d; color: #9aa4af; border: 1px solid #2d333b;
+          border-radius: 8px; padding: 4px 10px; font-size: 12px; }
+  #hint { font-size: 12px; color: #6e7681; text-align: center; padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <span id="dot"></span>
+  <strong>手机输入 → 电脑光标</strong>
+  <span id="status">连接中…</span>
+</header>
+<div id="banner"></div>
+<main>
+  <textarea id="ta" placeholder="点这里开始打字，或用输入法的麦克风语音听写…"></textarea>
+  <div class="opts">
+    <label><input type="checkbox" id="term"> 终端模式 (Ctrl+Shift+V)</label>
+    <label><input type="checkbox" id="enter"> 发送后追加回车</label>
+    <label><input type="checkbox" id="enterSend"> 回车即发送</label>
+    <button id="qr" class="mini" type="button">显示二维码</button>
+  </div>
+  <button id="send">发送到电脑 ⏎</button>
+  <div id="hint">发送前先在电脑上点好目标输入框 · iPhone 需先点一下输入框才会弹键盘</div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const ta = $("ta"), btn = $("send"), dot = $("dot"), statusEl = $("status"), banner = $("banner");
+const BTN_TEXT = "发送到电脑 ⏎";
+
+// token：URL ?k= 带入 → localStorage → 抹掉 query（防分享/截屏泄漏）
+let token = localStorage.getItem("cm_token") || "";
+const q = new URLSearchParams(location.search);
+if (q.get("k")) {
+  token = q.get("k");
+  localStorage.setItem("cm_token", token);
+  history.replaceState(null, "", location.pathname);
+}
+if (!token) {
+  banner.style.display = "block";
+  banner.textContent = "缺少访问令牌：请用安装时打印的完整 URL（含 ?k=…）打开本页";
+}
+
+// 开关持久化
+for (const [el, key] of [[$("term"), "cm_term"], [$("enter"), "cm_enter"], [$("enterSend"), "cm_entersend"]]) {
+  el.checked = localStorage.getItem(key) === "1";
+  el.addEventListener("change", () => localStorage.setItem(key, el.checked ? "1" : "0"));
+}
+
+let flashTimer = null;
+function flash(msg, ok) {
+  btn.textContent = msg;
+  btn.classList.toggle("ok", !!ok);
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => { btn.textContent = BTN_TEXT; btn.classList.remove("ok"); }, 1500);
+}
+
+async function send() {
+  const text = ta.value;
+  if (!text.trim() || btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch("/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Token": token },
+      body: JSON.stringify({ text, terminal_mode: $("term").checked, enter: $("enter").checked }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) {
+      banner.style.display = "block";
+      banner.textContent = "令牌失效：请用完整 URL 重新打开本页";
+      flash("令牌失效 ✗", false);
+      return;
+    }
+    if (r.ok && j.ok) {
+      ta.value = "";
+      flash("已送达 ✓", true);
+      ta.focus();  // 同一手势链内 focus，iOS 键盘不回落
+    } else if (j.copied) {
+      flash("已复制到剪贴板，请手动粘贴", false);
+      ta.focus();
+    } else {
+      flash((j.error || "发送失败").slice(0, 30), false);
+    }
+  } catch (e) {
+    flash("网络错误 ✗", false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+btn.addEventListener("click", send);
+$("qr").addEventListener("click", () => {
+  if (token) window.open("/qr.png?k=" + encodeURIComponent(token), "_blank");
+});
+
+// 回车即发送（默认关）：IME 组合中的回车是上屏，绝不能触发发送
+ta.addEventListener("keydown", e => {
+  if ($("enterSend").checked && e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
+    e.preventDefault();
+    send();
+  }
+});
+
+async function health() {
+  try {
+    const r = await fetch("/health", { cache: "no-store" });
+    const j = await r.json();
+    dot.className = "ok";
+    statusEl.textContent = j.injector_ready ? "已连接 · 注入就绪" : "已连接 · 注入未就绪";
+  } catch (e) {
+    dot.className = "bad";
+    statusEl.textContent = "连接断开";
+  }
+}
+health();
+setInterval(health, 5000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) health(); });
+</script>
+</body>
+</html>
