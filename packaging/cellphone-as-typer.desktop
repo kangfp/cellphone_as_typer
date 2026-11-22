@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
-Name=Cellphone Mic
+Name=Cellphone As Typer
 Name[zh_CN]=手机输入
 Comment=Pair your phone: type or dictate on phone, paste at Ubuntu cursor
 Comment[zh_CN]=手机配对：手机打字/语音，粘贴到乌班图光标处
-Exec=cellphone-mic
-Icon=cellphone-mic
+Exec=cellphone-as-typer
+Icon=cellphone-as-typer
 Terminal=false
 Categories=Utility;Accessibility;
 Keywords=phone;input;qr;paste;microphone;

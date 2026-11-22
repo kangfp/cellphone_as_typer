@@ -1,5 +1,5 @@
 #!/bin/sh
-# cellphone-mic 启动脚本：WAYLAND_DISPLAY 三级兜底
+# cellphone-as-typer 启动脚本：WAYLAND_DISPLAY 三级兜底
 # （环境变量 → systemd 用户环境 → 扫 XDG_RUNTIME_DIR 下的 wayland socket）
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 if [ -z "$WAYLAND_DISPLAY" ]; then

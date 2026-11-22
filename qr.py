@@ -79,7 +79,7 @@ def png_bytes(qr, scale: int = 10, border: int = 4) -> bytes:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="cellphone-mic 零依赖二维码生成器")
+    ap = argparse.ArgumentParser(description="cellphone-as-typer 零依赖二维码生成器")
     ap.add_argument("url", help="要编码的文本/URL")
     ap.add_argument("--png", metavar="PATH", help="输出 PNG 而非终端二维码")
     ap.add_argument("--scale", type=int, default=10, help="PNG 每模块像素数")

@@ -66,7 +66,7 @@ class Injector:
 
     backend_name = "native-uinput"
 
-    def __init__(self, paste_delay_ms: int = 150, device_name: str = "cellphone-mic-keyboard") -> None:
+    def __init__(self, paste_delay_ms: int = 150, device_name: str = "cellphone-as-typer-keyboard") -> None:
         self.paste_delay = paste_delay_ms / 1000.0
         self.device_name = device_name
         self._lock = threading.Lock()

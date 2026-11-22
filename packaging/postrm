@@ -1,13 +1,13 @@
 #!/bin/sh
-# cellphone-mic 卸载后脚本（以 root 运行）
+# cellphone-as-typer 卸载后脚本（以 root 运行）
 set -e
 
 case "$1" in
     purge)
         if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != root ]; then
             UH=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-            rm -rf "$UH/.config/cellphone-mic"
-            echo "cellphone-mic: 已清除 $SUDO_USER 的用户配置（token 失效）"
+            rm -rf "$UH/.config/cellphone-as-typer"
+            echo "cellphone-as-typer: 已清除 $SUDO_USER 的用户配置（token 失效）"
         fi
         ;;
     remove)

@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: cellphone-mic
-Source: https://github.com/kangfp/cellphone-as-mic
+Upstream-Name: cellphone-as-typer
+Source: https://github.com/kangfp/cellphone_as_typer
 
 Files: *
 Copyright: 2026 kangfp

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-"""cellphone-mic 桌面配对窗口：二维码 + 访问 URL + 打开输入页。
+"""cellphone-as-typer 桌面配对窗口：二维码 + 访问 URL + 打开输入页。
 
-deb 安装后的"打开位置"：应用菜单 → Cellphone Mic（手机输入）。
+deb 安装后的"打开位置"：应用菜单 → Cellphone As Typer（手机输入）。
 窗口里扫码即配对；「打开输入页」让桌面浏览器也能输入/分享二维码。
 源码树里也可直接运行（自动回退到仓库根目录找 qr.py）。
 """
@@ -15,7 +15,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
-for _p in ("/usr/lib/cellphone-mic", str(Path(__file__).resolve().parent.parent)):
+for _p in ("/usr/lib/cellphone-as-typer", str(Path(__file__).resolve().parent.parent)):
     if (Path(_p) / "qr.py").exists():
         sys.path.insert(0, _p)
         break
@@ -26,7 +26,7 @@ import gi  # noqa: E402
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf  # noqa: E402
 
-CFG = os.path.expanduser("~/.config/cellphone-mic/config.json")
+CFG = os.path.expanduser("~/.config/cellphone-as-typer/config.json")
 DEFAULTS = {"token": "", "port": 8765, "bind": "0.0.0.0", "paste_delay_ms": 150}
 
 
@@ -52,7 +52,7 @@ def ensure_cfg():
     if not cfg.get("token"):
         cfg["token"] = secrets.token_urlsafe(16)
         save_cfg(cfg)
-        subprocess.run(["systemctl", "--user", "enable", "--now", "cellphone-mic.service"],
+        subprocess.run(["systemctl", "--user", "enable", "--now", "cellphone-as-typer.service"],
                        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return cfg
 
@@ -66,10 +66,11 @@ def lan_ip():
 
 class Win(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Cellphone Mic · 手机输入")
+        super().__init__(title="Cellphone As Typer · 手机输入")
         self.set_default_size(380, 520)
         self.set_border_width(16)
         self.cfg = ensure_cfg()
+        self.running = True
         self.url = "http://%s:%s/?k=%s" % (lan_ip(), self.cfg["port"], self.cfg["token"])
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -82,10 +83,13 @@ class Win(Gtk.Window):
         btns = Gtk.Box(spacing=8)
         b_open = Gtk.Button(label="打开输入页")
         b_open.connect("clicked", self.on_open)
-        b_rot = Gtk.Button(label="轮换 token 刷新")
+        b_rot = Gtk.Button(label="轮换 token")
         b_rot.connect("clicked", self.on_rotate)
+        self.b_svc = Gtk.Button(label="停止服务")
+        self.b_svc.connect("clicked", self.on_svc)
         btns.pack_start(b_open, True, True, 0)
         btns.pack_start(b_rot, True, True, 0)
+        btns.pack_start(self.b_svc, True, True, 0)
         box.pack_start(btns, False, False, 0)
         self.status = Gtk.Label(label="…")
         box.pack_start(self.status, False, False, 0)
@@ -110,11 +114,18 @@ class Win(Gtk.Window):
     def on_rotate(self, _btn):
         self.cfg["token"] = secrets.token_urlsafe(16)
         save_cfg(self.cfg)
-        subprocess.run(["systemctl", "--user", "restart", "cellphone-mic.service"],
+        subprocess.run(["systemctl", "--user", "restart", "cellphone-as-typer.service"],
                        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.url = "http://%s:%s/?k=%s" % (lan_ip(), self.cfg["port"], self.cfg["token"])
         self.refresh_qr()
         self.status.set_text("token 已轮换，旧链接失效")
+
+    def on_svc(self, _btn):
+        # 停止/启动切换：只 stop 不 disable，下次登录会话仍自启
+        cmd = "stop" if self.running else "start"
+        subprocess.run(["systemctl", "--user", cmd, "cellphone-as-typer.service"],
+                       check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.poll_health()
 
     def poll_health(self):
         try:
@@ -122,10 +133,14 @@ class Win(Gtk.Window):
                 "http://127.0.0.1:%s/health" % self.cfg["port"], timeout=2
             ) as r:
                 j = json.loads(r.read())
+            self.running = True
+            self.b_svc.set_label("停止服务")
             self.status.set_text("服务运行中 · 后端 %s · 注入%s" % (
                 j.get("backend", "?"), "就绪" if j.get("injector_ready") else "未就绪"))
         except Exception:  # noqa: BLE001
-            self.status.set_text("服务未响应：systemctl --user restart cellphone-mic")
+            self.running = False
+            self.b_svc.set_label("启动服务")
+            self.status.set_text("服务已停止 · 点「启动服务」恢复")
         return True
 
 

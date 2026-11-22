@@ -20,8 +20,8 @@ from injector import Injector, uinput_available  # noqa: E402
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="cellphone-mic 注入冒烟测试")
-    ap.add_argument("--text", default="你好，世界 🌍 cellphone-mic 冒烟测试")
+    ap = argparse.ArgumentParser(description="cellphone-as-typer 注入冒烟测试")
+    ap.add_argument("--text", default="你好，世界 🌍 cellphone-as-typer 冒烟测试")
     ap.add_argument("--terminal", action="store_true", help="终端模式 Ctrl+Shift+V")
     ap.add_argument("--delay", type=int, default=3, help="倒计时秒数，用来切换焦点")
     args = ap.parse_args()

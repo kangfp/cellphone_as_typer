@@ -4,7 +4,7 @@ After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/lib/cellphone-mic/run.sh
+ExecStart=%h/.local/share/cellphone-as-typer/run.sh
 Restart=on-failure
 RestartSec=3
 

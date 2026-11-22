@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""cellphone-mic 服务：手机网页输入 → 剪贴板 → 光标处粘贴。纯 stdlib，零第三方依赖。
+"""cellphone-as-typer 服务：手机网页输入 → 剪贴板 → 光标处粘贴。纯 stdlib，零第三方依赖。
 
 路由：
   GET  /        移动端网页（?k=token 由前端存 localStorage 后抹掉）
@@ -28,10 +28,10 @@ from urllib.parse import parse_qs, urlparse
 
 from injector import InjectError, Injector, make_injector, uinput_available
 
-VERSION = "1.0.0"
+VERSION = "1.2.0"
 MAX_TEXT_BYTES = 64 * 1024
 DEFAULT_CONFIG = {"token": "", "port": 8765, "bind": "0.0.0.0", "paste_delay_ms": 150}
-CONFIG_PATH = Path.home() / ".config" / "cellphone-mic" / "config.json"
+CONFIG_PATH = Path.home() / ".config" / "cellphone-as-typer" / "config.json"
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
@@ -54,7 +54,7 @@ def load_or_create_config(path: Path) -> dict:
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
     timeout = 30  # 防手机浏览器 keep-alive 空闲连接泄漏线程
-    server_version = "cellphone-mic/" + VERSION
+    server_version = "cellphone-as-typer/" + VERSION
 
     def log_message(self, fmt, *args):
         # requestline 可能含 ?k=token → 剥掉 query，防 token 进 journald
@@ -189,7 +189,7 @@ def lan_ip() -> str:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="cellphone-mic: 手机 → Ubuntu 光标处输入服务")
+    ap = argparse.ArgumentParser(description="cellphone-as-typer: 手机 → Ubuntu 光标处输入服务")
     ap.add_argument("--config", default=str(CONFIG_PATH))
     ap.add_argument("--port", type=int)
     ap.add_argument("--bind")
@@ -208,7 +208,7 @@ def main() -> None:
             "headless 后端检查 DBUS_SESSION_BUS_ADDRESS 与 GNOME 会话\n"
         )
     httpd = make_server(cfg, injector)
-    print("cellphone-mic %s 监听 %s:%d" % (VERSION, cfg["bind"], cfg["port"]), flush=True)
+    print("cellphone-as-typer %s 监听 %s:%d" % (VERSION, cfg["bind"], cfg["port"]), flush=True)
     if os.environ.get("INVOCATION_ID"):
         # systemd 下 stdout 进 journald：token 不落日志
         print("手机访问 URL: http://%s:%d/?k=<token 见 %s>" % (lan_ip(), cfg["port"], args.config), flush=True)

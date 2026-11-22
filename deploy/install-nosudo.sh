@@ -4,8 +4,8 @@
 set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_DIR="$HOME/.local/share/cellphone-mic"
-CFG_DIR="$HOME/.config/cellphone-mic"
+APP_DIR="$HOME/.local/share/cellphone-as-typer"
+CFG_DIR="$HOME/.config/cellphone-as-typer"
 
 # 前置检查（只警告，不阻断）
 [ -w /dev/uinput ] || echo "!! /dev/uinput 不可写：注入会降级为仅剪贴板（需 udev 规则 + input 组 + 重登）"
@@ -17,7 +17,7 @@ mkdir -p "$APP_DIR/third_party"
 install -m 0644 "$SRC_DIR/third_party/qrcodegen.py" "$SRC_DIR/third_party/LICENSE-nayuki.txt" "$APP_DIR/third_party/"
 install -m 0644 "$SRC_DIR/static/index.html" "$APP_DIR/static/"
 install -m 0755 "$SRC_DIR/deploy/run.sh" "$APP_DIR/"
-install -m 0644 "$SRC_DIR/deploy/cellphone-mic.service" "$HOME/.config/systemd/user/"
+install -m 0644 "$SRC_DIR/deploy/cellphone-as-typer.service" "$HOME/.config/systemd/user/"
 
 python3 - "$CFG_DIR/config.json" <<'PY'
 import json, os, secrets, sys
@@ -37,10 +37,10 @@ PY
 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 systemctl --user daemon-reload
-systemctl --user enable cellphone-mic.service
-systemctl --user restart cellphone-mic.service
+systemctl --user enable cellphone-as-typer.service
+systemctl --user restart cellphone-as-typer.service
 sleep 1
-systemctl --user --no-pager -l status cellphone-mic.service | head -12 || true
+systemctl --user --no-pager -l status cellphone-as-typer.service | head -12 || true
 
 IP=$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.*src \([0-9.]*\).*/\1/p')
 [ -n "$IP" ] || IP=$(hostname -I | awk '{print $1}')

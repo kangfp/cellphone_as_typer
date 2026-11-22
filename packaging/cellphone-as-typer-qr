@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-"""cellphone-mic 每用户入口：初始化配置/token，打印访问 URL 与终端二维码。
+"""cellphone-as-typer 每用户入口：初始化配置/token，打印访问 URL 与终端二维码。
 
 以桌面用户身份运行（无需 sudo）：
-    cellphone-mic-qr            # 初始化（若需要）+ 打印 URL/二维码
-    cellphone-mic-qr --rotate   # 轮换 token 并重启服务，打印新二维码
+    cellphone-as-typer-qr            # 初始化（若需要）+ 打印 URL/二维码
+    cellphone-as-typer-qr --rotate   # 轮换 token 并重启服务，打印新二维码
 """
 
 import json
@@ -13,10 +13,10 @@ import secrets
 import subprocess
 import sys
 
-sys.path.insert(0, "/usr/lib/cellphone-mic")
+sys.path.insert(0, "/usr/lib/cellphone-as-typer")
 import qr  # noqa: E402
 
-CFG = os.path.expanduser("~/.config/cellphone-mic/config.json")
+CFG = os.path.expanduser("~/.config/cellphone-as-typer/config.json")
 rotate = "--rotate" in sys.argv[1:]
 
 cfg = {"token": "", "port": 8765, "bind": "0.0.0.0", "paste_delay_ms": 150}
@@ -33,9 +33,9 @@ with os.fdopen(fd, "w", encoding="utf-8") as f:
     json.dump(cfg, f, ensure_ascii=False, indent=2)
 
 # 兜底 enable：postinst 时若图形会话未运行，enable 可能失败，这里补上
-subprocess.run(["systemctl", "--user", "enable", "cellphone-mic.service"], check=False)
+subprocess.run(["systemctl", "--user", "enable", "cellphone-as-typer.service"], check=False)
 if rotate:
-    subprocess.run(["systemctl", "--user", "restart", "cellphone-mic.service"], check=False)
+    subprocess.run(["systemctl", "--user", "restart", "cellphone-as-typer.service"], check=False)
 
 out = subprocess.run(["ip", "-4", "route", "get", "1.1.1.1"],
                      capture_output=True, text=True).stdout

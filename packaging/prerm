@@ -1,5 +1,5 @@
 #!/bin/sh
-# cellphone-mic 卸载前脚本（以 root 运行）
+# cellphone-as-typer 卸载前脚本（以 root 运行）
 set -e
 
 case "$1" in
@@ -7,7 +7,7 @@ case "$1" in
         if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != root ]; then
             UN=$(id -u "$SUDO_USER")
             runuser -u "$SUDO_USER" -- env XDG_RUNTIME_DIR=/run/user/$UN DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$UN/bus \
-                systemctl --user disable --now cellphone-mic.service || true
+                systemctl --user disable --now cellphone-as-typer.service || true
         fi
         ;;
 esac

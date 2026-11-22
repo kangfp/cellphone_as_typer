@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # 在 VM 上生成访问二维码并打开到桌面（RDP 里扫码）。零依赖：用项目自带 qr.py。
 # 用法：./deploy/show-qr.sh user@vm-ip
-# token 轮换后重跑一次即可刷新二维码。需先完成部署（qr.py 在 ~/.local/share/cellphone-mic/）。
+# token 轮换后重跑一次即可刷新二维码。需先完成部署（qr.py 在 ~/.local/share/cellphone-as-typer/）。
 set -euo pipefail
 TARGET="${1:?用法: show-qr.sh user@vm-ip}"
 
 ssh "$TARGET" 'python3 - <<PY
 import json, os, re, subprocess, sys
-sys.path.insert(0, os.path.expanduser("~/.local/share/cellphone-mic"))
+sys.path.insert(0, os.path.expanduser("~/.local/share/cellphone-as-typer"))
 import qr
-cfg = json.load(open(os.path.expanduser("~/.config/cellphone-mic/config.json")))
+cfg = json.load(open(os.path.expanduser("~/.config/cellphone-as-typer/config.json")))
 out = subprocess.run(["ip", "-4", "route", "get", "1.1.1.1"],
                      capture_output=True, text=True).stdout
 m = re.search(r"src ([0-9.]+)", out)

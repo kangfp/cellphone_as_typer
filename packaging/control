@@ -1,9 +1,11 @@
-Package: cellphone-mic
-Version: 1.1.0
+Package: cellphone-as-typer
+Version: 1.2.0
 Section: utils
 Priority: optional
 Architecture: all
 Depends: python3 (>= 3.8), python3-dbus, python3-gi, gir1.2-gtk-3.0, wl-clipboard
+Conflicts: cellphone-mic
+Replaces: cellphone-mic
 Maintainer: Kang Feipeng <269406200+kangfp@users.noreply.github.com>
 Description: Phone web input → paste at Ubuntu cursor
  Type or dictate on your phone's browser; text lands at the cursor of the

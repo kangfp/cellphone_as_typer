@@ -5,5 +5,5 @@ set -euo pipefail
 TARGET="${1:?用法: deploy.sh user@vm-ip [--rotate-token]}"
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
 rsync -av --exclude '.git' --exclude '__pycache__' --exclude '.DS_Store' \
-  "$SRC/" "$TARGET:~/cellphone-mic-src/"
-ssh "$TARGET" "bash ~/cellphone-mic-src/deploy/setup.sh ${2:-}"
+  "$SRC/" "$TARGET:~/cellphone-as-typer-src/"
+ssh "$TARGET" "bash ~/cellphone-as-typer-src/deploy/setup.sh ${2:-}"

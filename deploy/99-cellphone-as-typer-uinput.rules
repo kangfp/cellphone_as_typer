@@ -1,3 +1,3 @@
-# cellphone-mic：允许 input 组写 /dev/uinput（虚拟键盘注入文字所需）
+# cellphone-as-typer：允许 input 组写 /dev/uinput（虚拟键盘注入文字所需）
 # 与 voice-type 已验证规则一致；装好后需注销重登（systemd --user 登录时才继承新组）
 KERNEL=="uinput", GROUP="input", MODE="0660"

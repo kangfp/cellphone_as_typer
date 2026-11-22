@@ -1,5 +1,5 @@
 #!/bin/sh
-# cellphone-mic 安装后脚本（以 root 运行）
+# cellphone-as-typer 安装后脚本（以 root 运行）
 set -e
 
 case "$1" in
@@ -17,35 +17,38 @@ case "$1" in
             UN=$(id -u "$SUDO_USER")
             RU="runuser -u $SUDO_USER -- env XDG_RUNTIME_DIR=/run/user/$UN DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$UN/bus"
 
-            # 迁移旧的手动部署（源码安装版）：删应用文件与旧 user unit，
-            # 保留 ~/.config/cellphone-mic/config.json（token 不变，手机免重配）
+            # 迁移旧版 cellphone-mic（手动部署或旧 deb）：停旧服务、删旧文件、
+            # 配置目录整体搬移（token 保留，手机免重配）
+            $RU systemctl --user disable --now cellphone-mic.service 2>/dev/null || true
             if [ -d "$UH/.local/share/cellphone-mic" ]; then
                 rm -rf "$UH/.local/share/cellphone-mic"
-                echo "cellphone-mic: 已迁移旧手动安装（~/.local/share/cellphone-mic 已移除）"
+                echo "cellphone-as-typer: 已移除旧手动部署 ~/.local/share/cellphone-mic"
             fi
-            if [ -f "$UH/.config/systemd/user/cellphone-mic.service" ]; then
-                rm -f "$UH/.config/systemd/user/cellphone-mic.service"
+            rm -f "$UH/.config/systemd/user/cellphone-mic.service"
+            if [ -d "$UH/.config/cellphone-mic" ] && [ ! -d "$UH/.config/cellphone-as-typer" ]; then
+                mv "$UH/.config/cellphone-mic" "$UH/.config/cellphone-as-typer"
+                echo "cellphone-as-typer: 已迁移旧配置（token 保留，手机免重配）"
             fi
 
             # input 组（native 后端需要；headless 后端无需）
             if ! id -nG "$SUDO_USER" | grep -qw input; then
                 usermod -aG input "$SUDO_USER"
-                echo "cellphone-mic: $SUDO_USER 已加入 input 组——native 后端需注销重登生效"
+                echo "cellphone-as-typer: $SUDO_USER 已加入 input 组——native 后端需注销重登生效"
             fi
 
             $RU systemctl --user daemon-reload || true
-            $RU systemctl --user enable cellphone-mic.service || true
-            $RU systemctl --user restart cellphone-mic.service || true
+            $RU systemctl --user enable cellphone-as-typer.service || true
+            $RU systemctl --user restart cellphone-as-typer.service || true
             # 每用户配置/token 初始化 + 打印 URL 与终端二维码（出现在 apt 输出里）
-            $RU cellphone-mic-qr || true
+            $RU cellphone-as-typer-qr || true
         else
-            echo "cellphone-mic: 未检测到 SUDO_USER——请以桌面用户身份运行 cellphone-mic-qr 完成初始化"
+            echo "cellphone-as-typer: 未检测到 SUDO_USER——请以桌面用户身份运行 cellphone-as-typer-qr 完成初始化"
         fi
 
-        echo "cellphone-mic 已安装。"
-        echo "  • 手机扫上方二维码即用（以后可随时运行: cellphone-mic-qr）"
-        echo "  • 轮换 token: cellphone-mic-qr --rotate"
-        echo "  • 服务状态: systemctl --user status cellphone-mic"
+        echo "cellphone-as-typer 已安装。"
+        echo "  • 打开位置：应用菜单 → Cellphone As Typer（手机输入），或终端 cellphone-as-typer-qr"
+        echo "  • 配对窗口含「停止服务」按钮，可按喜好随时停用/恢复"
+        echo "  • 服务状态: systemctl --user status cellphone-as-typer"
         ;;
 esac
 

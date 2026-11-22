@@ -1,4 +1,4 @@
-# cellphone-mic：手机 → Ubuntu 光标处输入
+# cellphone_as_typer：手机 → Ubuntu 光标处输入
 
 手机浏览器打字 / 语音听写，文本自动粘贴到 Ubuntu 当前光标处。
 安卓 / iPhone 通吃，不装 app；纯 Python 标准库，零 pip 依赖。
@@ -50,7 +50,7 @@ bash deploy/setup.sh
 ```
 
 setup.sh 会：装 wl-clipboard → 装 udev 规则 + 加 input 组 →
-部署到 `~/.local/share/cellphone-mic/` → 生成 token（`~/.config/cellphone-mic/config.json`，0600）→
+部署到 `~/.local/share/cellphone-as-typer/` → 生成 token（`~/.config/cellphone-as-typer/config.json`，0600）→
 装 systemd 用户服务 → 打印手机 URL + **无条件输出终端二维码**。
 
 若机器已具备 udev 规则 / input 组 / wl-clipboard（或只走 headless 后端），
@@ -61,13 +61,13 @@ setup.sh 会：装 wl-clipboard → 装 udev 规则 + 加 input 组 →
 构建（Debian/Ubuntu 上运行；Mac 可经 SSH 到目标机构建）：
 
 ```bash
-bash build-deb.sh    # 产出 build/deb/cellphone-mic_1.1.0_all.deb（Architecture: all）
+bash build-deb.sh    # 产出 build/deb/cellphone-as-typer_1.2.0_all.deb（Architecture: all）
 ```
 
 安装（自动配齐所有依赖）：
 
 ```bash
-sudo apt install ./build/deb/cellphone-mic_1.1.0_all.deb
+sudo apt install ./build/deb/cellphone-as-typer_1.2.0_all.deb
 ```
 
 包自动完成：装依赖（python3-dbus / python3-gi / wl-clipboard）→ udev 规则落位 →
@@ -75,21 +75,27 @@ sudo apt install ./build/deb/cellphone-mic_1.1.0_all.deb
 **安装输出里直接打印访问 URL 与终端二维码**，扫完即用。
 旧的手动部署自动迁移（保留 token，手机免重配）。
 
-**打开位置**：应用菜单 → 「Cellphone Mic / 手机输入」——配对窗口直接显示
+**打开位置**：应用菜单 → 「Cellphone As Typer / 手机输入」——配对窗口直接显示
 二维码与 URL（手机扫码即用），「打开输入页」让桌面浏览器也能输入/分享二维码，
-「轮换 token 刷新」一键换码。终端等价命令：`cellphone-mic-qr`。
+「轮换 token」一键换码；**「停止服务」按钮**可按喜好随时停用（停止后变为
+「启动服务」一键恢复；只 stop 不 disable，下次登录会话仍自启）。
+终端等价命令：`cellphone-as-typer-qr`。
+
+> 命名约定：项目/仓库名 `cellphone_as_typer`；deb 包名、服务名、命令用连字符
+> `cellphone-as-typer`（Debian 包名规范不允许下划线）。旧包 cellphone-mic
+> 安装新版时自动迁移（Conflicts/Replaces + 配置搬移，token 保留）。
 
 日常命令（桌面用户身份，无需 sudo）：
 
 ```bash
-cellphone-mic-qr           # 打印 URL / 终端二维码
-cellphone-mic-qr --rotate  # 轮换 token 并重启服务
-systemctl --user status cellphone-mic
+cellphone-as-typer-qr           # 打印 URL / 终端二维码
+cellphone-as-typer-qr --rotate  # 轮换 token 并重启服务
+systemctl --user status cellphone-as-typer
 ```
 
-卸载：`sudo apt remove cellphone-mic`；`purge` 会连用户配置（token）一起清除。
+卸载：`sudo apt remove cellphone-as-typer`；`purge` 会连用户配置（token）一起清除。
 
-**加 input 组后必须注销重登**，再 `systemctl --user restart cellphone-mic`。
+**加 input 组后必须注销重登**，再 `systemctl --user restart cellphone-as-typer`。
 
 ### 冒烟测试（部署后第一件事）
 

@@ -1,11 +1,20 @@
-cellphone-mic (1.1.0) noble; urgency=medium
+cellphone-as-typer (1.2.0) noble; urgency=medium
+
+  * Rename project to cellphone_as_typer (package/service/commands use
+    cellphone-as-typer: Debian package names cannot contain underscores).
+  * Pairing window: stop/start service toggle button.
+  * postinst migrates cellphone-mic installs preserving the token.
+
+ -- Kang Feipeng <269406200+kangfp@users.noreply.github.com>  Sat, 22 Nov 2026 22:40:00 +0800
+
+cellphone-as-typer (1.1.0) noble; urgency=medium
 
   * Add desktop entry and GTK pairing window (QR + URL + open input page):
     after install the app is discoverable from the application menu.
 
  -- Kang Feipeng <269406200+kangfp@users.noreply.github.com>  Sat, 22 Nov 2026 22:10:00 +0800
 
-cellphone-mic (1.0.0) noble; urgency=medium
+cellphone-as-typer (1.0.0) noble; urgency=medium
 
   * Initial release: phone web input to Ubuntu cursor with dual injection
     backends (native uinput / headless Mutter RemoteDesktop D-Bus) and
