@@ -1,0 +1,14 @@
+cellphone-mic (1.1.0) noble; urgency=medium
+
+  * Add desktop entry and GTK pairing window (QR + URL + open input page):
+    after install the app is discoverable from the application menu.
+
+ -- Kang Feipeng <269406200+kangfp@users.noreply.github.com>  Sat, 22 Nov 2026 22:10:00 +0800
+
+cellphone-mic (1.0.0) noble; urgency=medium
+
+  * Initial release: phone web input to Ubuntu cursor with dual injection
+    backends (native uinput / headless Mutter RemoteDesktop D-Bus) and
+    zero-dependency QR pairing.
+
+ -- Kang Feipeng <269406200+kangfp@users.noreply.github.com>  Sat, 22 Nov 2026 21:30:00 +0800

@@ -13,4 +13,6 @@ fi
 export WAYLAND_DISPLAY
 # headless D-Bus 后端需要会话总线地址
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
-exec /usr/bin/python3 "$HOME/.local/share/cellphone-mic/server.py"
+# 自目录解析：源码部署（~/.local/share）与 deb（/usr/lib）两种布局共用
+DIR=$(cd "$(dirname "$0")" && pwd)
+exec /usr/bin/python3 "$DIR/server.py"

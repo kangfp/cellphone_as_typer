@@ -1,0 +1,16 @@
+Package: cellphone-mic
+Version: 1.1.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.8), python3-dbus, python3-gi, gir1.2-gtk-3.0, wl-clipboard
+Maintainer: Kang Feipeng <269406200+kangfp@users.noreply.github.com>
+Description: Phone web input → paste at Ubuntu cursor
+ Type or dictate on your phone's browser; text lands at the cursor of the
+ focused window on Ubuntu. Chinese conversion happens in the phone IME, so
+ any language and emoji work. Two injection backends are auto-selected by
+ session seat: native wl-copy + uinput virtual keyboard for local sessions,
+ and Mutter RemoteDesktop D-Bus clipboard/keysym for headless GNOME
+ remote-login (RDP) sessions where wl-clipboard and uinput are unavailable.
+ Prints a zero-dependency QR code at install time for instant phone pairing;
+ a token-protected /qr.png endpoint shares access with more devices.

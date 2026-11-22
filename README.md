@@ -56,6 +56,39 @@ setup.sh 会：装 wl-clipboard → 装 udev 规则 + 加 input 组 →
 若机器已具备 udev 规则 / input 组 / wl-clipboard（或只走 headless 后端），
 可用免 sudo 版：`bash deploy/install-nosudo.sh`。
 
+### deb 包安装（推荐普通用户）
+
+构建（Debian/Ubuntu 上运行；Mac 可经 SSH 到目标机构建）：
+
+```bash
+bash build-deb.sh    # 产出 build/deb/cellphone-mic_1.1.0_all.deb（Architecture: all）
+```
+
+安装（自动配齐所有依赖）：
+
+```bash
+sudo apt install ./build/deb/cellphone-mic_1.1.0_all.deb
+```
+
+包自动完成：装依赖（python3-dbus / python3-gi / wl-clipboard）→ udev 规则落位 →
+安装用户加 input 组 → enable + 启动用户服务 → 初始化每用户 token →
+**安装输出里直接打印访问 URL 与终端二维码**，扫完即用。
+旧的手动部署自动迁移（保留 token，手机免重配）。
+
+**打开位置**：应用菜单 → 「Cellphone Mic / 手机输入」——配对窗口直接显示
+二维码与 URL（手机扫码即用），「打开输入页」让桌面浏览器也能输入/分享二维码，
+「轮换 token 刷新」一键换码。终端等价命令：`cellphone-mic-qr`。
+
+日常命令（桌面用户身份，无需 sudo）：
+
+```bash
+cellphone-mic-qr           # 打印 URL / 终端二维码
+cellphone-mic-qr --rotate  # 轮换 token 并重启服务
+systemctl --user status cellphone-mic
+```
+
+卸载：`sudo apt remove cellphone-mic`；`purge` 会连用户配置（token）一起清除。
+
 **加 input 组后必须注销重登**，再 `systemctl --user restart cellphone-mic`。
 
 ### 冒烟测试（部署后第一件事）
