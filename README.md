@@ -39,51 +39,29 @@ wl-clipboard 与 uinput 都失效，只有 mutter D-Bus 通道可用。
    X11 与 Wayland 后端均可）、`deploy/inject_paste.py`、`deploy/probe_keys.py`。
    GNOME 46 的 Screenshot/GetWindows D-Bus 接口有白名单，普通客户端被拒。
 
-## 部署（Ubuntu 虚拟机侧）
+## 安装（Ubuntu 桌面）
+
+### deb 包安装（推荐）
+
+从 [GitHub Release](https://github.com/kangfp/cellphone_as_typer/releases) 下载
+`cellphone-as-typer_<版本>_all.deb`，然后：
 
 ```bash
-# Mac 上一键推送 + 安装（需先打通 SSH）
-./deploy/deploy.sh <user>@<VM-IP>
-
-# 或在虚拟机上直接
-bash deploy/setup.sh
-```
-
-setup.sh 会：装 wl-clipboard → 装 udev 规则 + 加 input 组 →
-部署到 `~/.local/share/cellphone-as-typer/` → 生成 token（`~/.config/cellphone-as-typer/config.json`，0600）→
-装 systemd 用户服务 → 打印手机 URL + **无条件输出终端二维码**。
-
-若机器已具备 udev 规则 / input 组 / wl-clipboard（或只走 headless 后端），
-可用免 sudo 版：`bash deploy/install-nosudo.sh`。
-
-### deb 包安装（推荐普通用户）
-
-构建（Debian/Ubuntu 上运行；Mac 可经 SSH 到目标机构建）：
-
-```bash
-bash build-deb.sh    # 产出 build/deb/cellphone-as-typer_1.2.0_all.deb（Architecture: all）
-```
-
-安装（自动配齐所有依赖）：
-
-```bash
-sudo apt install ./build/deb/cellphone-as-typer_1.2.0_all.deb
+sudo apt install ./cellphone-as-typer_1.2.0_all.deb
 ```
 
 包自动完成：装依赖（python3-dbus / python3-gi / wl-clipboard）→ udev 规则落位 →
 安装用户加 input 组 → enable + 启动用户服务 → 初始化每用户 token →
 **安装输出里直接打印访问 URL 与终端二维码**，扫完即用。
-旧的手动部署自动迁移（保留 token，手机免重配）。
+旧的手动部署 / 旧包 cellphone-mic 自动迁移（保留 token，手机免重配）。
+
+**加 input 组后必须注销重登**，再 `systemctl --user restart cellphone-as-typer`。
 
 **打开位置**：应用菜单 → 「Cellphone As Typer / 手机输入」——配对窗口直接显示
 二维码与 URL（手机扫码即用），「打开输入页」让桌面浏览器也能输入/分享二维码，
 「轮换 token」一键换码；**「停止服务」按钮**可按喜好随时停用（停止后变为
 「启动服务」一键恢复；只 stop 不 disable，下次登录会话仍自启）。
 终端等价命令：`cellphone-as-typer-qr`。
-
-> 命名约定：项目/仓库名 `cellphone_as_typer`；deb 包名、服务名、命令用连字符
-> `cellphone-as-typer`（Debian 包名规范不允许下划线）。旧包 cellphone-mic
-> 安装新版时自动迁移（Conflicts/Replaces + 配置搬移，token 保留）。
 
 日常命令（桌面用户身份，无需 sudo）：
 
@@ -95,11 +73,39 @@ systemctl --user status cellphone-as-typer
 
 卸载：`sudo apt remove cellphone-as-typer`；`purge` 会连用户配置（token）一起清除。
 
-**加 input 组后必须注销重登**，再 `systemctl --user restart cellphone-as-typer`。
+> 命名约定：项目/仓库名 `cellphone_as_typer`；deb 包名、服务名、命令用连字符
+> `cellphone-as-typer`（Debian 包名规范不允许下划线）。
+
+### 源码构建 deb（Debian/Ubuntu 上运行）
+
+```bash
+bash build-deb.sh    # 产出 build/deb/cellphone-as-typer_1.2.0_all.deb（Architecture: all）
+```
+
+### 手动部署（不用 deb 时）
+
+```bash
+bash deploy/setup.sh
+```
+
+setup.sh 会：装 wl-clipboard → 装 udev 规则 + 加 input 组 →
+部署到 `~/.local/share/cellphone-as-typer/` → 生成 token（`~/.config/cellphone-as-typer/config.json`，0600）→
+装 systemd 用户服务 → 打印手机 URL + **无条件输出终端二维码**。
+
+若机器已具备 udev 规则 / input 组 / wl-clipboard（或只走 headless 后端），
+可用免 sudo 版：`bash deploy/install-nosudo.sh`。
+
+### 远程部署（可选）
+
+从另一台机器经 SSH 一键推送源码并安装（需先打通 SSH 密钥）：
+
+```bash
+./deploy/deploy.sh <user>@<host>
+```
 
 ### 冒烟测试（部署后第一件事）
 
-在 **RDP 会话内的 GNOME Terminal** 里：
+在桌面上：
 
 ```bash
 python3 deploy/smoke_test.py            # 3 秒内焦点点到 Text Editor → 光标处出中文
@@ -115,8 +121,8 @@ python3 deploy/smoke_test.py --terminal # 焦点放 GNOME Terminal → Ctrl+Shif
 
 三个入口：
 - 安装时终端二维码（SSH 里直接扫）
+- GTK 配对窗口 / `cellphone-as-typer-qr`：桌面随时调出二维码
 - 网页「显示二维码」按钮 / `GET /qr.png?k=<token>`：分享给第二台设备的二维码图（需 token）
-- `./deploy/show-qr.sh [user@vm-ip]`：在 VM 桌面打开二维码（RDP 里扫），token 轮换后重跑刷新
 
 正确性验证：`tests/test_qr.py` 用 OpenCV 独立解码器回环（可选开发依赖
 `opencv-python-headless`）。历史教训：曾与 segno 逐模块对照，发现 segno 在
@@ -126,7 +132,7 @@ terminator 后多插一个全零填充字节（与规范手算不符）——矩
 ## 使用
 
 1. 电脑上也点好目标输入框（光标在哪，字就落在哪）
-2. 手机打开 `http://<VM-IP>:8765/?k=<token>`（扫安装时的二维码即可）
+2. 手机打开 `http://<电脑局域网IP>:8765/?k=<token>`（扫安装时的二维码即可）
 3. 打字或按输入法麦克风听写 → 「发送到电脑」
 
 网页开关：
@@ -134,21 +140,17 @@ terminator 后多插一个全零填充字节（与规范手算不符）——矩
 - **发送后追加回车**：终端里直接跑命令（默认关；多行粘贴有终端确认弹窗兜底）
 - **回车即发送**：默认关（手机回车应换行；中文输入法组合中的回车不会误触发）
 
-token 记在手机 localStorage，杀后台重开不用重输。轮换：`bash deploy/setup.sh --rotate-token`。
+token 记在手机 localStorage，杀后台重开不用重输。
+轮换：`cellphone-as-typer-qr --rotate`（手动部署用 `bash deploy/setup.sh --rotate-token`）。
 
 ## 限制与已知副作用（读我）
 
 - **焦点前提**：文本粘贴到 Ubuntu 当前焦点窗口，发送前先点好目标位置。
-  若 RDP 是 view-only 模式（`grdctl status` 可查），鼠标点不了窗口——
-  要么 `grdctl rdp disable-view-only` 恢复输入，要么经 SSH `gtk-launch <应用>` 开窗自动拿焦点。
-- **Mac 剪贴板会被覆盖**：GRD 剪贴板双向同步开着时，手机发来的文本会同步到 Mac mini
-  剪贴板（VM→Mac 方向）。通常算 feature；不想要就在 Mac 的 FreeRDP-client
-  「本地资源」页把剪贴板方向改为「仅本机→远程」或关闭。
 - **iPhone 不自动弹键盘**：iOS 只在用户手势中 focus 才弹软键盘，进页面先点一下输入框。
 - **键盘布局依赖**：注入发的是扫描码（KEY_V），依赖 XKB 布局；默认 US/中文布局没问题，
   改冷门布局可能导致粘贴键失效。
-- **会话生命周期**：服务挂 graphical-session.target，随图形会话起停。VM 重启后需
-  自动登录或首次 RDP 登录触发会话；GRD 会话断开 RDP 后仍存续，服务不掉。
+- **会话生命周期**：服务挂 graphical-session.target，随图形会话起停，登录桌面即自启。
+  headless GRD 会话断开 RDP 后仍存续，服务不掉。
 - **注入失败不丢字**：按键注入失败时文本已在剪贴板，网页提示手动粘贴。
 
 ## 故障排查
@@ -156,10 +158,9 @@ token 记在手机 localStorage，杀后台重开不用重输。轮换：`bash d
 | 症状 | 处置 |
 |---|---|
 | 状态灯绿但提示"键盘注入不可用" | `/dev/uinput` 权限：udev 规则 + input 组 + **注销重登** + 重启服务 |
-| 文本只到剪贴板、光标处不出现 | 同上；或 GRD 剪贴板竞态 → FreeRDP-client 方向设「仅远程→本机」 |
+| 文本只到剪贴板、光标处不出现 | 同上 |
 | wl-copy 报找不到 display | run.sh 三级兜底应已覆盖；确认在图形会话内 `systemctl --user` |
-| RDP 突然卡死/黑屏 | GRD 46.3 已知 refcount bug：`sudo systemctl restart gnome-remote-desktop` |
-| 手机打不开网页 | VM 网络是否桥接（`ip -4 addr` 应与手机同网段）；ufw 是否放行 8765 |
+| 手机打不开网页 | 电脑与手机是否同一局域网（`ip -4 addr` 查电脑 IP）；ufw 是否放行 8765 |
 | 401 | token 轮换过 → 用新完整 URL 重开 |
 
 ## 安全
@@ -172,9 +173,9 @@ token 记在手机 localStorage，杀后台重开不用重输。轮换：`bash d
 ## 开发
 
 ```bash
-python3 tests/test_server.py   # Mac 可跑：fake injector 测路由/鉴权/并发
+python3 tests/test_server.py   # 任意有 python3 的机器可跑：fake injector 测路由/鉴权/并发
 python3 tests/test_qr.py       # QR 回环（需可选开发依赖 opencv-python-headless）
-python3 server.py --bind 127.0.0.1 --port 8765   # 本机前台起服务（注入在 Mac 上不可用，仅调网页）
+python3 server.py --bind 127.0.0.1 --port 8765   # 本机前台起服务调网页（注入需 Ubuntu 图形会话）
 ```
 
 文件：`server.py`（HTTP）、`injector.py`（原生后端 + 后端工厂）、`headless.py`
